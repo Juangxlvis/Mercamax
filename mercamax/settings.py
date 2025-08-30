@@ -55,7 +55,10 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'dj_rest_auth.registration',
+    'allauth_2fa',
     'corsheaders',
+    'users.apps.UsersConfig',
+    'bodega.apps.BodegaConfig',
 ]
 
 MIDDLEWARE = [
@@ -161,3 +164,22 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+
+# Cierra la sesión después de 1 minuto (60 segundos) de inactividad
+SESSION_COOKIE_AGE = 60
+# Resetea el contador de inactividad con cada petición
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Configuración de Two-Factor Authentication (2FA)
+ACCOUNT_ADAPTER = "allauth_2fa.adapter.OTPAdapter"
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
