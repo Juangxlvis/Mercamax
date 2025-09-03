@@ -10,6 +10,12 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre
 
+# inventario/models.py
+class CategoriaProducto(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    def __str__(self):
+        return self.nombre
+
 # [cite_start]Modelo para los productos del inventario [cite: 68]
 class Producto(models.Model):
     nombre = models.CharField(max_length=200)
@@ -17,6 +23,7 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True)
     precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
     stock_minimo = models.PositiveIntegerField(default=10, verbose_name="Punto de Reorden") # Punto de reorden 
+    categoria = models.ForeignKey(CategoriaProducto, on_delete=models.PROTECT, null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT) # Cada producto tiene un proveedor
     
     def __str__(self):

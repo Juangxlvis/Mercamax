@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.conf import settings
 # bodega/models.py (modelo Ubicacion actualizado)
 
 class CategoriaUbicacion(models.Model):
@@ -56,3 +56,26 @@ class StockItem(models.Model):
     def __str__(self):
         return f"{self.cantidad} de {self.lote} en {self.ubicacion}"
     
+class AjusteInventario(models.Model):
+    class Motivo(models.TextChoices):
+        CONTEO_FISICO = 'CONTEO', 'Diferencia por Conteo Físico'
+        PRODUCTO_DAÑADO = 'DAÑADO', 'Producto Dañado / Merma'
+        ROBO_EXTRAVIO = 'ROBO', 'Robo o Extravío'
+        ERROR_RECEPCION = 'RECEPCION', 'Error en Recepción'
+        OTRO = 'OTRO', 'Otro'
+
+    stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, help_text="Ítem de stock que se ajusta")
+    cantidad_anterior = models.IntegerField()
+    cantidad_nueva = models.IntegerField()
+    diferencia = models.IntegerField(editable=False)
+    motivo = models.CharField(max_length=10, choices=Motivo.choices)
+    notas = models.TextField(blank=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, help_text="Usuario que realiza el ajuste")
+    fecha_ajuste = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.diferencia = self.cantidad_nueva - self.cantidad_anterior
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Ajuste de {self.diferencia} en {self.stock_item} por {self.usuario.username}"
