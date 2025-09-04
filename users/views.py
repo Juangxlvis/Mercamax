@@ -5,8 +5,8 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
 
 from rest_framework import generics, status
@@ -15,6 +15,8 @@ from rest_framework.response import Response
 from .permissions import IsAdminUser
 from .serializers import InviteUserSerializer
 from core.models import PerfilUsuario
+from .serializers import ActivateAccountSerializer
+
 
 class InviteUserView(generics.CreateAPIView):
     """
@@ -65,3 +67,38 @@ class InviteUserView(generics.CreateAPIView):
             if 'user' in locals() and user.pk:
                 user.delete()
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class ActivateAccountView(generics.GenericAPIView):
+    """
+    Endpoint para activar la cuenta de un usuario invitado.
+    """
+    permission_classes = [] # Es un endpoint público
+    serializer_class = ActivateAccountSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        uidb64 = serializer.validated_data.get('uid')
+        token = serializer.validated_data.get('token')
+        password = serializer.validated_data.get('password')
+
+        try:
+            # Decodificar el UID para obtener el ID del usuario
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        # Verificar que el usuario exista y que el token sea válido
+        if user is not None and default_token_generator.check_token(user, token):
+            # Activar el usuario y establecer su contraseña
+            user.is_active = True
+            user.set_password(password)
+            user.save()
+            return Response({'detail': 'Cuenta activada exitosamente.'}, status=status.HTTP_200_OK)
+        else:
+            # Si el token no es válido o el usuario no existe
+            return Response({'error': 'El enlace de activación no es válido.'}, status=status.HTTP_400_BAD_REQUEST)
+
