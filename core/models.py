@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 
 class PerfilUsuario(models.Model):
     ROLES = [
@@ -10,6 +12,7 @@ class PerfilUsuario(models.Model):
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rol = models.CharField(max_length=50, choices=ROLES)
+    otp_secret = models.CharField(max_length=32, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.get_rol_display()}"
@@ -22,3 +25,23 @@ from django.dispatch import receiver
 def crear_o_actualizar_perfil_usuario(sender, instance, created, **kwargs):
     if created:
         PerfilUsuario.objects.create(user=instance)
+
+class PasswordResetRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    email_sent = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Password reset for {self.user.username} at {self.created_at}"
+
+class TrustedDevice(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    device_token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_valid(self):
+        return self.expires_at > timezone.now()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.device_token}"
