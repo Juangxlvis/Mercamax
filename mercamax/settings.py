@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from dotenv import load_dotenv
 import dj_database_url
+import sentry_sdk
 
 # Carga las variables del archivo .env
 load_dotenv()
@@ -34,6 +35,16 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Pon esto debajo de DEBUG
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
+
+sentry_sdk.init(
+    dsn="https://b22715d7d636ae36d8a746f840b89bce@o4509976913575936.ingest.us.sentry.io/4509976914886656", # <-- Pega la DSN que te dio Sentry
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions for slow queries.
+    profiles_sample_rate=1.0,
+)
 
 
 # Application definition
