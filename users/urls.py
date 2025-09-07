@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import InviteUserView, RolListView, ActivateAccountView, ForgotPasswordView, ResetPasswordConfirmView
+from .views import InviteUserView, RolListView, ActivateAccountView, ValidateTokenView, ForgotPasswordView, ResetPasswordConfirmView
 
 urlpatterns = [
     path('admin/invite/', InviteUserView.as_view(), name='invite-user'),

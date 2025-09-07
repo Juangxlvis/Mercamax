@@ -7,6 +7,7 @@ urlpatterns = [
 
     #APIs de módulos de negocio
     path('api/inventario/', include('inventario.urls')),
+    path('api/bodega/', include('bodega.urls')),
 
     #APIs de usuarios
     path('api/users/', include('users.urls')),

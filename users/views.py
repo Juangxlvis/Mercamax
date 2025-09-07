@@ -248,6 +248,7 @@ class Verify2FAView(APIView):
 
     def post(self, request):
         code = request.data.get("code")
+        remember_device = request.data.get("rememberDevice", False)
         user = request.user
 
         secret = getattr(user.perfilusuario, "otp_secret", None)
@@ -256,13 +257,30 @@ class Verify2FAView(APIView):
 
         totp = pyotp.TOTP(secret, interval=300)
         if totp.verify(code):
+
             # Código correcto → creamos token final de sesión
             final_token, _ = Token.objects.get_or_create(user=user)
-            return Response({
+
+            response_data = {
                 "token": final_token.key,
                 "username": user.username,
                 "rol": user.perfilusuario.rol,
                 "trusted": False
-            }, status=200)
+            }
+
+            #si pidió recordar dispositivo, guardamos el TrustedDevice
+            if remember_device:
+                device_token = secrets.token_urlsafe(32)
+                expires_at = timezone.now() + timedelta(days=30)  # configurable
+                TrustedDevice.objects.create(
+                    user=user,
+                    device_token=device_token,
+                    expires_at=expires_at
+                )
+                response_data["trusted"] = True
+                response_data["device_token"] = device_token
+
+            return Response(response_data, status=200)
 
         return Response({"error": "Código inválido o expirado."}, status=400)
+            
