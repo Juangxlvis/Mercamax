@@ -6,6 +6,8 @@ from datetime import timedelta
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from ventas.models import DetalleVenta #Necesitamos importar datos de ventas
 from inventario.models import Producto
+from rest_framework.response import Response
+from rest_framework import status
 
 from rest_framework import viewsets
 from .models import CategoriaUbicacion, Ubicacion, Lote, StockItem, AjusteInventario
@@ -213,3 +215,14 @@ class LoteViewSet(viewsets.ModelViewSet):
 class StockItemViewSet(viewsets.ModelViewSet):
     queryset = StockItem.objects.all()
     serializer_class = StockItemSerializer
+
+class TipoUbicacionView(APIView):
+    """
+    Devuelve la lista de tipos de ubicación disponibles desde el modelo Ubicacion.
+    """
+    def get(self, request, *args, **kwargs):
+        tipos = [
+            {"value": choice[0], "label": choice[1]}
+            for choice in Ubicacion.TipoUbicacion.choices
+        ]
+        return Response(tipos, status=status.HTTP_200_OK)

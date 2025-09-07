@@ -9,9 +9,21 @@ class CategoriaUbicacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UbicacionSerializer(serializers.ModelSerializer):
+    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
+    parent_nombre = serializers.CharField(source='parent.nombre', read_only=True)
     class Meta:
         model = Ubicacion
         fields = '__all__'
+    
+    def validate_tipo(self, value):
+        if not value:
+            raise serializers.ValidationError("El tipo de ubicación es obligatorio.")
+        return value
+
+    def validate_nombre(self, value):
+        if not value:
+            raise serializers.ValidationError("El nombre es obligatorio.")
+        return value
 
 class LoteSerializer(serializers.ModelSerializer):
     class Meta:

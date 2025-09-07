@@ -16,7 +16,6 @@ class CategoriaProducto(models.Model):
     def __str__(self):
         return self.nombre
 
-# [cite_start]Modelo para los productos del inventario [cite: 68]
 class Producto(models.Model):
     nombre = models.CharField(max_length=200)
     codigo_barras = models.CharField(max_length=100, unique=True)
@@ -25,7 +24,10 @@ class Producto(models.Model):
     stock_minimo = models.PositiveIntegerField(default=10, verbose_name="Punto de Reorden") # Punto de reorden 
     categoria = models.ForeignKey(CategoriaProducto, on_delete=models.PROTECT, null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT) # Cada producto tiene un proveedor
-    
+    stock = models.PositiveIntegerField(default=0) # Cantidad actual en inventario
+    costo_compra = models.DecimalField(max_digits=10, decimal_places=2)
+
+
     def __str__(self):
         return self.nombre
 

@@ -7,13 +7,20 @@ class ProductoSerializer(serializers.ModelSerializer):
     # 1. Definimos los nuevos campos que no existen en el modelo.
     stock_total = serializers.IntegerField(read_only=True)
     costo_promedio_ponderado = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    costo_compra = serializers.DecimalField(max_digits=10, decimal_places=2,default=0)
+    precio_venta = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)
+    stock_minimo = serializers.IntegerField(required=False, default=0)
+    proveedor = serializers.PrimaryKeyRelatedField(queryset=Proveedor.objects.all(), required=True)
+    categoria = serializers.PrimaryKeyRelatedField(queryset=CategoriaProducto.objects.all(), required=True)
+    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
+
 
     class Meta:
         model = Producto
         # 2. Añadimos los nuevos campos a la lista de 'fields'.
         fields = [
             'id', 'nombre', 'codigo_barras', 'descripcion', 
-            'precio_venta', 'stock_minimo', 'categoria', 'proveedor',
+            'precio_venta', 'costo_compra', 'stock_minimo', 'categoria', 'categoria_nombre','proveedor',
             'stock_total', 'costo_promedio_ponderado' 
         ]
 
@@ -49,3 +56,8 @@ class ProveedorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proveedor
         fields = '__all__'
+        
+class CategoriaProductoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CategoriaProducto
+        fields = ['id', 'nombre']
