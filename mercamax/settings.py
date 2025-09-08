@@ -175,7 +175,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200", # Puerto por defecto de Angular
+    "http://localhost:4200",
+    "https://mercamax-frontend.vercel.app", # Puerto por defecto de Angular
 ]
 
 SITE_ID = 1
